@@ -173,6 +173,26 @@ describe('fulfillment, cancel and refunds', () => {
     const manual = await createOrder(order({ lines: [order().lines[1]!], payment: { provider: 'cash', ref: 'x', status: 'paid' } }));
     expect(await code(refundOrder(manual.id, { amount: 100 }))).toBe('no_provider');
   });
+
+  it('a paid order that was cancelled can still be refunded (capped) and stays cancelled; an unpaid one cannot', async () => {
+    const o = await createOrder(order());
+    await cancelOrder(o.id, { reason: 'customer' });
+    expect(await code(refundOrder(o.id, { amount: 100, restock: true }))).toBe('invalid');
+    expect(await code(refundOrder(o.id, { amount: o.total + 1 }))).toBe('too_much');
+    await refundOrder(o.id, { amount: 1000 });
+    await refundOrder(o.id, { amount: o.total - 1000 });
+    expect((await getOrder(o.id))!).toMatchObject({ status: 'cancelled', refundedTotal: o.total });
+    expect(await code(refundOrder(o.id, { amount: 1 }))).toBe('too_much');
+    expect(await stock()).toEqual([2, 5]); // el stock solo se devolvió al cancelar
+    const refund = ordersAdminResource.actions!.find((a) => a.name === 'refund')!;
+    const pending = await createOrder(order({ payment: { provider: 'stripe', ref: 'pi_3', status: 'pending' } }));
+    await cancelOrder(pending.id);
+    expect(await code(refundOrder(pending.id, { amount: 100 }))).toBe('invalid_transition');
+    expect(refund.available!((await getOrder(pending.id))!)).toBe(false);
+    const paid = await createOrder(order({ payment: { provider: 'stripe', ref: 'pi_4', status: 'paid' } }));
+    await cancelOrder(paid.id);
+    expect(refund.available!((await getOrder(paid.id))!)).toBe(true);
+  });
 });
 
 describe('customer access (anti-IDOR) and admin', () => {

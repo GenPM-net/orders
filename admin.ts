@@ -81,7 +81,7 @@ export const ordersAdminResource: AdminResource<OrderDetail> = {
       permission: 'orders:refund',
       confirm: true,
       input: Refund,
-      available: (o) => (o.status === 'paid' || o.status === 'partially_refunded') && o.refundedTotal < o.total,
+      available: (o) => (o.status === 'paid' || o.status === 'partially_refunded' || (o.status === 'cancelled' && !!o.paidAt)) && o.refundedTotal < o.total,
       async run(id, input, ctx) {
         await need(ctx, 'orders:refund');
         await refundOrder(id, { ...Refund.parse(input), actor: ctx.user.id });

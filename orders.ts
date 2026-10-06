@@ -126,7 +126,7 @@ export async function createOrder(input: NewOrder, db: Executor = getDb()): Prom
       .returning();
     await t.insert(orderLines).values(lines.map((l, position) => ({ ...l, orderId: order!.id, position })));
     await event(t, order!.id, 'created', { total: order!.total });
-    if (paid) await emit(t, order!.id, 'paid');
+    if (paid) await paidInTx(t, order!);
     return order!;
   });
 }
@@ -138,12 +138,12 @@ export async function markPaid(orderId: string, payment: { provider: string; ref
     if (o.status === 'paid') return o;
     if (o.status !== 'pending') throw new OrderError('invalid_transition', `cannot mark ${o.status} order as paid`);
     const [row] = await t.update(orders).set({ status: 'paid', paidAt: new Date(), paymentProvider: payment.provider, paymentRef: payment.ref }).where(eq(orders.id, orderId)).returning();
-    await emit(t, orderId, 'paid');
+    await paidInTx(t, row!);
     return row!;
   });
 }
 
-/** Cancela un pedido sin envíos: devuelve el stock y, si estaba pagado, hay que reembolsar aparte. */
+/** Cancela un pedido sin envíos: devuelve el stock y, si estaba pagado, hay que reembolsar aparte (`refundOrder`). */
 export async function cancelOrder(orderId: string, opts: { reason?: string; actor?: string; restock?: boolean } = {}, db: Executor = getDb()): Promise<Order> {
   return tx(db, async (t) => {
     const o = await lock(orderId, t);
@@ -223,7 +223,8 @@ export const clearPaymentProviders = () => providers.clear();
 
 /**
  * Reembolsa `amount` (≤ lo pendiente de reembolsar) a través de la pasarela del pedido. Con `lines` y `restock`
- * devuelve esas unidades al stock. Idempotente por número de reembolso.
+ * devuelve esas unidades al stock. Idempotente por número de reembolso. Un pedido cancelado que se llegó a pagar
+ * también se reembolsa (sigue `cancelled`; su stock ya se gestionó al cancelarlo, así que no admite `restock`).
  */
 export async function refundOrder(
   orderId: string,
@@ -232,7 +233,9 @@ export async function refundOrder(
 ): Promise<Refund> {
   return tx(db, async (t) => {
     const o = await lock(orderId, t);
-    if (o.status !== 'paid' && o.status !== 'partially_refunded') throw new OrderError('invalid_transition', `cannot refund a ${o.status} order`);
+    const cancelledPaid = o.status === 'cancelled' && !!o.paidAt;
+    if (o.status !== 'paid' && o.status !== 'partially_refunded' && !cancelledPaid) throw new OrderError('invalid_transition', `cannot refund a ${o.status} order`);
+    if (cancelledPaid && input.restock) throw new OrderError('invalid', 'stock of a cancelled order was handled when cancelling it');
     if (!Number.isInteger(input.amount) || input.amount <= 0 || input.amount > o.total - o.refundedTotal) throw new OrderError('too_much', 'invalid refund amount');
     const provider = o.paymentProvider ? providers.get(o.paymentProvider) : undefined;
     if (!provider || !o.paymentRef) throw new OrderError('no_provider', `no payment provider registered for ${o.paymentProvider ?? 'this order'}`);
@@ -250,7 +253,8 @@ export async function refundOrder(
       .values({ orderId, amount: input.amount, reason: input.reason ?? null, lines: input.lines ?? [], restocked: !!input.restock, providerRef: refundRef })
       .returning();
     const refundedTotal = o.refundedTotal + input.amount;
-    await t.update(orders).set({ refundedTotal, status: refundedTotal >= o.total ? 'refunded' : 'partially_refunded' }).where(eq(orders.id, orderId));
+    const status = cancelledPaid ? 'cancelled' : refundedTotal >= o.total ? 'refunded' : 'partially_refunded';
+    await t.update(orders).set({ refundedTotal, status }).where(eq(orders.id, orderId));
     await event(t, orderId, 'refunded', { amount: input.amount, refundId: r!.id }, input.actor);
     await emit(t, orderId, 'refunded', { refundId: r!.id });
     return r!;
@@ -324,7 +328,27 @@ const handlers = new Map<OrderEventType, Array<{ name: string; fn: Handler }>>()
 export function onOrderEvent(type: OrderEventType, name: string, fn: Handler): void {
   handlers.set(type, [...(handlers.get(type) ?? []).filter((h) => h.name !== name), { name, fn }]);
 }
-export const clearOrderHandlers = () => handlers.clear();
+export const clearOrderHandlers = () => {
+  handlers.clear();
+  paidTxHooks.clear();
+};
+
+type PaidTxHook = (order: Order, tx: Executor) => Promise<void>;
+const paidTxHooks = new Map<string, PaidTxHook>();
+
+/**
+ * Reacciona al pago DENTRO de la transacción que crea o marca pagado el pedido (p. ej. @core/discounts registra los
+ * usos de sus códigos con la fila bloqueada). Debe ser breve y no lanzar por reglas de negocio: si lanza, el pedido
+ * no se crea. Para trabajo lento o con red, usa `onOrderEvent`.
+ */
+export function onOrderPaidTx(name: string, fn: PaidTxHook): void {
+  paidTxHooks.set(name, fn);
+}
+
+async function paidInTx(t: Executor, order: Order) {
+  for (const fn of paidTxHooks.values()) await fn(order, t);
+  await emit(t, order.id, 'paid');
+}
 
 async function event(db: Executor, orderId: string, type: string, data: Record<string, unknown> = {}, actor?: string) {
   await db.insert(orderEvents).values({ orderId, type, data, actor: actor ?? null });

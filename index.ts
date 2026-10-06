@@ -21,6 +21,7 @@ export {
   orderAccessToken,
   orderEventJob,
   onOrderEvent,
+  onOrderPaidTx,
   parseAddress,
   refundOrder,
   registerPaymentProvider,
