@@ -1,0 +1,41 @@
+{
+  "$": 1,
+  "n": "@core/orders",
+  "v": "1.0.0",
+  "s": {
+    "en": "Orders: frozen lines, stock reservation, payment and shipping states, partial shipments, refunds, emails and events",
+    "es": "Pedidos: líneas congeladas, reserva de stock, estados de pago y envío, envíos parciales, reembolsos, emails y eventos",
+    "pt-BR": "Pedidos: linhas congeladas, reserva de estoque, estados de pagamento e envio, envios parciais, reembolsos e e-mails",
+    "fr": "Commandes : lignes figées, réservation de stock, états de paiement et d'expédition, envois partiels, remboursements",
+    "de": "Bestellungen: eingefrorene Positionen, Lagerreservierung, Zahlungs- und Versandstatus, Teillieferungen, Erstattungen",
+    "ja": "注文：明細の固定、在庫引当、支払いと配送の状態、分割出荷、返金、メールとイベント",
+    "zh-CN": "订单：冻结明细、库存预留、支付与发货状态、部分发货、退款、邮件和事件",
+    "ko": "주문: 고정된 주문 항목, 재고 예약, 결제·배송 상태, 부분 배송, 환불, 이메일과 이벤트"
+  },
+  "d": "src/lib/orders",
+  "l": "MIT",
+  "k": [
+    "ecommerce",
+    "orders",
+    "fulfillment",
+    "refunds",
+    "checkout"
+  ],
+  "g": {
+    "@core/db": "^1.0.0",
+    "@core/auth": "^1.1.0",
+    "@core/catalog": "^1.0.0",
+    "@core/email": "^1.0.1",
+    "@core/jobs": "^1.0.0",
+    "@core/money": "^1.0.0",
+    "@core/contracts": "^1.0.0"
+  },
+  "p": {
+    "zod": "^4.0.0"
+  },
+  "e": [
+    "ORDER_LINK_SECRET",
+    "ORDER_NUMBER_PREFIX",
+    "SITE_URL"
+  ]
+}

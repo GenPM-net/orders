@@ -1,0 +1,42 @@
+// @core/orders — API pública. Importa desde aquí (registra los emails del pedido); ruta de cliente en adapters/.
+export { ordersAdminResource } from './admin.js';
+export { type OrderMessages, orderUrl, registerOrderEmails, setOrderMessages } from './emails.js';
+export {
+  addFulfillment,
+  addNote,
+  cancelOrder,
+  clearOrderHandlers,
+  clearPaymentProviders,
+  createOrder,
+  getOrder,
+  getOrderForCustomer,
+  listOrdersForUser,
+  markDelivered,
+  markPaid,
+  type NewOrder,
+  type NewOrderLine,
+  type OrderDetail,
+  OrderError,
+  type OrderEventType,
+  orderAccessToken,
+  orderEventJob,
+  onOrderEvent,
+  parseAddress,
+  refundOrder,
+  registerPaymentProvider,
+  updateTracking,
+} from './orders.js';
+export {
+  type Address,
+  type Fulfillment,
+  fulfillments,
+  type Order,
+  type OrderAdjustment,
+  type OrderLine,
+  orderEvents,
+  orderLines,
+  orderNumberSeq,
+  orders,
+  type Refund,
+  refunds,
+} from './schema.js';
