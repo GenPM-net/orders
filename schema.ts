@@ -1,7 +1,7 @@
 // Tablas de @core/orders. Las recoge drizzle-kit vía src/lib/db/drizzle.config.ts.
 import { boolean, index, integer, jsonb, pgSequence, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
-import { users } from '../auth/index.js';
-import { primaryId, timestamps } from '../db/index.js';
+import { users } from '../auth/index.ts';
+import { primaryId, timestamps } from '../db/index.ts';
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: 'date' });
 

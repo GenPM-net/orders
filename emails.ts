@@ -1,8 +1,8 @@
 // Emails transaccionales del pedido (confirmación con enlace de seguimiento, enviado, reembolso), enviados una vez
 // por evento a través de @core/email. Textos sustituibles por idioma con `setOrderMessages`.
-import { getEmailProvider } from '../email/index.js';
-import { format, money } from '../money/index.js';
-import { type OrderDetail, onOrderEvent, orderAccessToken } from './orders.js';
+import { getEmailProvider } from '../email/index.ts';
+import { format, money } from '../money/index.ts';
+import { type OrderDetail, onOrderEvent, orderAccessToken } from './orders.ts';
 
 export type OrderMessages = {
   confirmationSubject: (number: string) => string;

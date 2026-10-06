@@ -1,16 +1,16 @@
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { upsertOAuthUser } from '../auth/index.js';
-import * as authSchema from '../auth/schema.js';
-import { createProduct, getProduct } from '../catalog/index.js';
-import * as catalogSchema from '../catalog/schema.js';
-import type { AdminContext, PaymentProvider } from '../contracts/index.js';
-import { testDb } from '../db/__fixtures__/pglite.js';
-import { type EmailMessage, setEmailProvider } from '../email/index.js';
-import { runDue } from '../jobs/index.js';
-import * as jobsSchema from '../jobs/schema.js';
-import { orderRoutes } from './adapters/hono.js';
-import * as schema from './schema.js';
+import { upsertOAuthUser } from '../auth/index.ts';
+import * as authSchema from '../auth/schema.ts';
+import { createProduct, getProduct } from '../catalog/index.ts';
+import * as catalogSchema from '../catalog/schema.ts';
+import type { AdminContext, PaymentProvider } from '../contracts/index.ts';
+import { testDb } from '../db/__fixtures__/pglite.ts';
+import { type EmailMessage, setEmailProvider } from '../email/index.ts';
+import { runDue } from '../jobs/index.ts';
+import * as jobsSchema from '../jobs/schema.ts';
+import { orderRoutes } from './adapters/hono.ts';
+import * as schema from './schema.ts';
 import {
   addFulfillment,
   cancelOrder,
@@ -27,7 +27,7 @@ import {
   ordersAdminResource,
   refundOrder,
   registerPaymentProvider,
-} from './index.js';
+} from './index.ts';
 
 const sent: EmailMessage[] = [];
 const refundsCalled: Array<{ ref: string; amount: number; key: string }> = [];

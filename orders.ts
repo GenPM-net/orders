@@ -2,11 +2,11 @@
 // en segundo plano (@core/jobs) para que otros módulos reaccionen (emails, proveedores, píxeles).
 import { asc, count, desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import { releaseStock, reserveStock } from '../catalog/index.js';
-import type { PaymentProvider } from '../contracts/index.js';
-import { type Executor, getDb, withTransaction } from '../db/index.js';
-import { defineJob } from '../jobs/index.js';
-import { money } from '../money/index.js';
+import { releaseStock, reserveStock } from '../catalog/index.ts';
+import type { PaymentProvider } from '../contracts/index.ts';
+import { type Executor, getDb, withTransaction } from '../db/index.ts';
+import { defineJob } from '../jobs/index.ts';
+import { money } from '../money/index.ts';
 import {
   type Address,
   type Fulfillment,
@@ -19,7 +19,7 @@ import {
   orders,
   type Refund,
   refunds,
-} from './schema.js';
+} from './schema.ts';
 
 export class OrderError extends Error {
   constructor(

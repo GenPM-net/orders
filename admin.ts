@@ -1,10 +1,10 @@
 // Recurso de panel "Pedidos": lista con filtros, detalle con líneas/envíos/reembolsos/historial y acciones.
 import { and, count, desc, ilike, or, type SQL, sql } from 'drizzle-orm';
 import { z } from 'zod';
-import type { AdminContext, AdminResource } from '../contracts/index.js';
-import { getDb } from '../db/index.js';
-import { addFulfillment, cancelOrder, getOrder, markPaid, type OrderDetail, OrderError, refundOrder } from './orders.js';
-import { orders } from './schema.js';
+import type { AdminContext, AdminResource } from '../contracts/index.ts';
+import { getDb } from '../db/index.ts';
+import { addFulfillment, cancelOrder, getOrder, markPaid, type OrderDetail, OrderError, refundOrder } from './orders.ts';
+import { orders } from './schema.ts';
 
 async function need(ctx: AdminContext, perm: string) {
   if (!(await ctx.can(perm))) throw new OrderError('forbidden', `forbidden: ${perm}`);

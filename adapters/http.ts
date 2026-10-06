@@ -1,5 +1,5 @@
 // Vista del pedido para el cliente: JSON sin datos internos (sin costes, refs de pago ni historial interno).
-import { getOrderForCustomer, type OrderDetail } from '../index.js';
+import { getOrderForCustomer, type OrderDetail } from '../index.ts';
 
 export type CurrentUserId = (req: Request) => Promise<string | null>;
 
