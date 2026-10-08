@@ -14,7 +14,10 @@ background events (`onOrderEvent`) with built-in emails (confirmation, shipped, 
 
 ## Integration
 1. Env: `ORDER_LINK_SECRET` (≥ 32 chars), `SITE_URL`, `EMAIL_FROM`, optional `ORDER_NUMBER_PREFIX`. Migrations as in `src/lib/db/AGENTS.md`; the @core/jobs cron must run.
-2. Orders are created by @core/checkout from the paid cart; for manual flows call `createOrder({ … })`.
+2. Orders are created by @core/checkout from the paid cart; for manual flows call `createOrder({ … })`. To test the
+   paid flow without a payment provider: `createOrder({ …, payment: { provider: 'manual', ref: 'test', status: 'pending' } })`,
+   then `markPaid(order.id, { provider: 'manual', ref: 'test' })`; the `paid` handlers (emails, @core/suppliers) run as
+   @core/jobs jobs, so call `runDue()` (or wait for `/api/cron`).
 3. Customer page `/orders/[number]`: `getOrderForCustomer(number, { userId, token })` (404 when null) rendered with `publicOrder`.
 4. React to events in a module imported at startup: `onOrderEvent('paid', 'my-crm', async (order) => …)`.
    Translate emails with `setOrderMessages((locale) => ({ … }))`. For bookkeeping that must be atomic with the payment
