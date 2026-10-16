@@ -1,7 +1,7 @@
 {
   "$": 1,
   "n": "@core/orders",
-  "v": "1.1.1",
+  "v": "1.1.2",
   "s": {
     "en": "Orders: frozen lines, stock reservation, payment and shipping states, partial shipments, refunds, emails and events",
     "es": "Pedidos: líneas congeladas, reserva de stock, estados de pago y envío, envíos parciales, reembolsos, emails y eventos",
